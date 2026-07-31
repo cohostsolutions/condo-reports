@@ -1,0 +1,11 @@
+{
+  "name": "condo-owner-reports",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "generate": "node scripts/generate-report.mjs"
+  }
+}
