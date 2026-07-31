@@ -58,20 +58,31 @@ function mapRemittance(p) {
   };
 }
 
+function mapNote(p) {
+  return {
+    title: prop(p, 'Title'),
+    period: prop(p, 'Period'),
+    note: prop(p, 'Note'),
+    type: prop(p, 'Type'),
+  };
+}
+
 const generated = [];
 
 for (const unit of units) {
   console.log(`Generating report for ${unit.name} (${unit.slug})...`);
-  const [resPages, expPages, remPages] = await Promise.all([
+  const [resPages, expPages, remPages, notePages] = await Promise.all([
     queryDataSource(unit.notion.reservations),
     queryDataSource(unit.notion.expenses),
     queryDataSource(unit.notion.remittance),
+    unit.notion.notes ? queryDataSource(unit.notion.notes) : Promise.resolve([]),
   ]);
 
   const report = buildReport(unit, {
     reservations: resPages.map(mapReservation),
     expenses: expPages.map(mapExpense),
     remittances: remPages.map(mapRemittance),
+    notes: notePages.map(mapNote),
   });
 
   const html = renderReport(report);
