@@ -83,22 +83,31 @@ for (const unit of units) {
 }
 
 // Regenerate the landing page so it always lists exactly what's been built.
+// This page is an INTERNAL directory for Coco's own reference — it lists every
+// owner and unit on one page, so it must never be the link handed to an owner.
+// Only the unit-specific URL (docs/<slug>/) is safe to share externally.
+const TOTAL_UNITS_PLANNED = 8;
 const landingLinks = unitsConfig
   .map(
     (u) =>
       `<li><a href="./${u.slug}/">${u.name} — ${u.propertyLabel}</a> <span style="color:#7A6E62">(${u.ownerLabel})</span></li>`
   )
   .join('\n      ');
+const isPilot = unitsConfig.length < TOTAL_UNITS_PLANNED;
 
 const landingHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Co-Host Solutions — Owner Reports</title>
+<meta name="robots" content="noindex, nofollow">
+<title>Co-Host Solutions — Owner Reports (Internal)</title>
 <style>
   body { font-family: 'DM Sans', Arial, sans-serif; background: #F7F3ED; color: #3D3530; max-width: 640px; margin: 60px auto; padding: 0 24px; }
   h1 { font-size: 24px; color: #3D2E1E; }
+  .warning { background: #FBF3DC; border-left: 3px solid #B8860B; border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 20px 0; font-size: 13.5px; line-height: 1.6; }
+  .warning strong { color: #3D2E1E; }
+  .status { background: #FDFAF6; border: 1px solid #E2D9CC; border-radius: 8px; padding: 10px 16px; font-size: 13px; color: #7A6E62; margin-bottom: 8px; display: inline-block; }
   ul { list-style: none; padding: 0; margin-top: 24px; }
   li { padding: 14px 0; border-bottom: 1px solid #E2D9CC; }
   a { color: #3D2E1E; font-weight: 600; text-decoration: none; }
@@ -107,6 +116,10 @@ const landingHtml = `<!DOCTYPE html>
 </head>
 <body>
   <h1>Co-Host Solutions — Owner Reports</h1>
+  <div class="status">${unitsConfig.length} of ${TOTAL_UNITS_PLANNED} units live${isPilot ? ' — pilot phase, more being added' : ''}</div>
+  <div class="warning">
+    <strong>Internal use only.</strong> This page lists every unit and owner together — do not send this link to owners. Copy each unit's own link below (e.g. <code>/1215/</code>) and share only that one with its owner.
+  </div>
   <ul>
       ${landingLinks}
   </ul>
