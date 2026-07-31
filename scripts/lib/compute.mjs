@@ -57,6 +57,8 @@ function emptyMonth(key) {
     expenseLines: [],
     mgmtFee: 0,
     netIncome: 0,
+    laundryTotal: 0,
+    cleaningTotal: 0,
     reservations: [],
     notes: [],
   };
@@ -84,6 +86,8 @@ export function buildReport(unit, { reservations, expenses, remittances, notes }
     m.netRevenue += rate - commission;
     m.nights += nights;
     m.bySource[r.source || 'Unknown'] = (m.bySource[r.source || 'Unknown'] || 0) + nights;
+    m.laundryTotal += r.laundryFee || 0;
+    m.cleaningTotal += r.cleaningFee || 0;
     m.reservations.push(r);
   }
   for (const m of months.values()) {
@@ -134,9 +138,11 @@ export function buildReport(unit, { reservations, expenses, remittances, notes }
       acc.netIncome += m.netIncome;
       acc.nights += m.nights;
       acc.availableNights += m.availableNights;
+      acc.laundryTotal += m.laundryTotal;
+      acc.cleaningTotal += m.cleaningTotal;
       return acc;
     },
-    { grossRevenue: 0, otaCommission: 0, netRevenue: 0, expenses: 0, mgmtFee: 0, netIncome: 0, nights: 0, availableNights: 0 }
+    { grossRevenue: 0, otaCommission: 0, netRevenue: 0, expenses: 0, mgmtFee: 0, netIncome: 0, nights: 0, availableNights: 0, laundryTotal: 0, cleaningTotal: 0 }
   );
   if (unassigned) {
     totals.expenses += unassigned.expenses;

@@ -73,6 +73,11 @@ function monthCard(m, idx) {
         <div class="stat-mini"><div class="stat-mini-label">Mgmt fee</div><div class="stat-mini-val">${peso(m.mgmtFee)}</div></div>
       </div>
       <div class="stat-row">${sourceRows || '<div class="stat-mini"><div class="stat-mini-label">Nights by platform</div><div class="stat-mini-val">No bookings logged yet</div></div>'}</div>
+      <div class="stat-row">
+        <div class="stat-mini"><div class="stat-mini-label">Laundry fees collected</div><div class="stat-mini-val">${peso(m.laundryTotal)}</div></div>
+        <div class="stat-mini"><div class="stat-mini-label">Cleaning fees collected</div><div class="stat-mini-val">${peso(m.cleaningTotal)}</div></div>
+        <div class="stat-mini"><div class="stat-mini-label">Total pass-through</div><div class="stat-mini-val">${peso(m.laundryTotal + m.cleaningTotal)}</div></div>
+      </div>
       ${monthNotes ? `<div class="note-list">${monthNotes}</div>` : ''}
       ${
         dailyRows
@@ -285,6 +290,11 @@ export function renderReport(report) {
       <div class="stat-mini"><div class="stat-mini-label">Occupancy (lifetime)</div><div class="stat-mini-val">${pct(totals.occupancyPct)}</div></div>
       <div class="stat-mini"><div class="stat-mini-label">Average Daily Rate</div><div class="stat-mini-val">${peso(totals.adr)}</div></div>
       <div class="stat-mini"><div class="stat-mini-label">Platform commission</div><div class="stat-mini-val">${pct(totals.commissionPct)} of revenue</div></div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-mini"><div class="stat-mini-label">Laundry fees collected (lifetime)</div><div class="stat-mini-val">${peso(totals.laundryTotal)}</div></div>
+      <div class="stat-mini"><div class="stat-mini-label">Cleaning fees collected (lifetime)</div><div class="stat-mini-val">${peso(totals.cleaningTotal)}</div></div>
+      <div class="stat-mini"><div class="stat-mini-label">Total pass-through</div><div class="stat-mini-val">${peso(totals.laundryTotal + totals.cleaningTotal)}</div></div>
     </div>
 
     ${overallNoteCards ? `<div class="sub-heading">Notes from Co-Host Solutions</div><div class="note-list">${overallNoteCards}</div>` : ''}
