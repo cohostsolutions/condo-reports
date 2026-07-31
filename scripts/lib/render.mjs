@@ -171,29 +171,31 @@ export function renderReport(report) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${esc(unit.name)} — Owner Report</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=general-sans@300,400,500,600,700&display=swap">
 <style>
   :root {
-    --cream: #F7F3ED; --warm-white: #FDFAF6; --charcoal: #1C1A17; --brown: #3D2E1E;
-    --gold: #B8860B; --gold-light: #E8C96A; --gold-pale: #FBF3DC;
-    --green: #1E5C3A; --green-light: #D4EDDA; --red: #8B2020; --red-light: #FAE0E0;
-    --amber: #7A4A00; --amber-light: #FFF0CC; --blue: #1E4E8C; --blue-light: #DCE8FB;
-    --border: #E2D9CC; --text-muted: #7A6E62; --text-body: #3D3530;
+    /* Co-Host Solutions brand tokens, pulled from the partnership proposal template */
+    --cream: #FAF8F5; --warm-white: #FFFFFF; --charcoal: #1A1410; --brown: #5C1220;
+    --gold: #A0823A; --gold-light: #C8A96E; --gold-pale: #F5EDD8;
+    --green: #2E7D52; --green-light: #EBF7F1; --red: #C0392B; --red-light: #FDECEA;
+    --amber: #7A6020; --amber-light: #FEF8E7; --blue: #1D5FA8; --blue-light: #EBF2FC;
+    --border: #EDE8E0; --text-muted: #8A7E72; --text-body: #4A4238;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text-body); line-height: 1.6; }
+  body { font-family: 'General Sans', system-ui, sans-serif; background: var(--cream); color: var(--text-body); line-height: 1.6; }
   .report-header { background: var(--brown); color: var(--cream); padding: 60px 48px 52px; }
   .header-label { font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-light); margin-bottom: 14px; }
-  .header-title { font-family: 'DM Serif Display', serif; font-size: 40px; line-height: 1.15; color: #fff; margin-bottom: 10px; }
+  .header-title { font-family: 'Merriweather', Georgia, serif; font-size: 40px; line-height: 1.15; color: #fff; margin-bottom: 10px; }
   .header-sub { font-size: 15px; color: rgba(247,243,237,0.65); }
   .nav-bar { background: var(--warm-white); border-bottom: 1px solid var(--border); padding: 0 48px; position: sticky; top: 0; z-index: 100; display: flex; gap: 0; overflow-x: auto; }
-  .nav-btn { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--text-muted); background: none; border: none; border-bottom: 2px solid transparent; padding: 16px 20px; cursor: pointer; white-space: nowrap; }
+  .nav-btn { font-family: 'General Sans', system-ui, sans-serif; font-size: 13px; font-weight: 500; color: var(--text-muted); background: none; border: none; border-bottom: 2px solid transparent; padding: 16px 20px; cursor: pointer; white-space: nowrap; }
   .nav-btn:hover { color: var(--brown); }
   .nav-btn.active { color: var(--brown); border-bottom-color: var(--gold); font-weight: 600; }
   .content { max-width: 900px; margin: 0 auto; padding: 48px 48px 80px; }
   .section { display: none; } .section.active { display: block; }
   .section-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
-  .section-heading { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--brown); margin-bottom: 12px; line-height: 1.25; }
+  .section-heading { font-family: 'Merriweather', Georgia, serif; font-size: 28px; color: var(--brown); margin-bottom: 12px; line-height: 1.25; }
   .section-intro { font-size: 14.5px; color: var(--text-muted); margin-bottom: 28px; max-width: 640px; }
   .sub-heading { font-size: 13px; font-weight: 700; color: var(--brown); text-transform: uppercase; letter-spacing: 0.06em; margin: 20px 0 8px; }
   .hero-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
@@ -201,15 +203,15 @@ export function renderReport(report) {
   .hero-card.green-card { background: var(--green); border-color: var(--green); }
   .hero-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
   .hero-card.green-card .hero-label { color: rgba(255,255,255,0.6); }
-  .hero-value { font-family: 'DM Serif Display', serif; font-size: 32px; color: var(--brown); }
+  .hero-value { font-family: 'Merriweather', Georgia, serif; font-size: 32px; color: var(--brown); }
   .hero-card.green-card .hero-value { color: #fff; }
   .divider { height: 1px; background: var(--border); margin: 28px 0; }
   .month-grid { display: flex; flex-direction: column; gap: 20px; margin-bottom: 36px; }
   .month-card { background: var(--warm-white); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
   .month-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border); cursor: pointer; }
   .month-header:hover { background: var(--cream); }
-  .month-name { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--brown); }
-  .month-net-preview { font-family: 'DM Serif Display', serif; font-size: 20px; }
+  .month-name { font-family: 'Merriweather', Georgia, serif; font-size: 20px; color: var(--brown); }
+  .month-net-preview { font-family: 'Merriweather', Georgia, serif; font-size: 20px; }
   .pos { color: var(--green); } .neg { color: var(--red); }
   .month-body { padding: 24px; display: none; } .month-body.open { display: block; }
   .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
