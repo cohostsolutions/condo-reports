@@ -23,11 +23,13 @@ async function notionFetch(path, options = {}) {
 }
 
 // Pulls every row from a Notion data source (a database's collection), following pagination.
-export async function queryDataSource(dataSourceId) {
+// `filter` is an optional Notion API filter object, e.g. one that scopes a centralized
+// database down to a single unit via its "Unit" relation property.
+export async function queryDataSource(dataSourceId, filter) {
   const results = [];
   let cursor;
   do {
-    const body = cursor ? { start_cursor: cursor, page_size: 100 } : { page_size: 100 };
+    const body = { page_size: 100, ...(cursor ? { start_cursor: cursor } : {}), ...(filter ? { filter } : {}) };
     const page = await notionFetch(`/data_sources/${dataSourceId}/query`, {
       method: 'POST',
       body: JSON.stringify(body),
@@ -36,6 +38,11 @@ export async function queryDataSource(dataSourceId) {
     cursor = page.has_more ? page.next_cursor : undefined;
   } while (cursor);
   return results;
+}
+
+// Builds the Notion API filter that scopes a centralized database to one unit.
+export function unitFilter(unitPageId) {
+  return { property: 'Unit', relation: { contains: unitPageId } };
 }
 
 function plainText(richTextArr) {

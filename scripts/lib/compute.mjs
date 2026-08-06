@@ -95,6 +95,9 @@ export function buildReport(unit, { reservations, expenses, remittances, notes }
   }
 
   for (const e of expenses) {
+    // "In-House Only" expenses are costs Co-Host absorbs itself (e.g. internal staff
+    // time) — they never reach the owner's report or reduce the owner's net income.
+    if (e.ownerVisibility === 'In-House Only') continue;
     const key = e.date ? dateToKey(e.date) : e.month ? monthStringToKey(e.month) : 'unassigned';
     const m = getMonth(key);
     m.expenses += e.amount || 0;
