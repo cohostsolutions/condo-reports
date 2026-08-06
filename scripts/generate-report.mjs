@@ -1,22 +1,27 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { queryDataSource, prop } from './lib/notion.mjs';
+import { queryDataSource, unitFilter, prop } from './lib/notion.mjs';
 import { buildReport } from './lib/compute.mjs';
 import { renderReport } from './lib/render.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.join(__dirname, '..');
 
-const unitsConfig = JSON.parse(await readFile(path.join(repoRoot, 'config', 'units.json'), 'utf8'));
+const notionConfig = JSON.parse(await readFile(path.join(repoRoot, 'config', 'notion.json'), 'utf8'));
 
-const unitFlagIdx = process.argv.indexOf('--unit');
-const filterSlug = unitFlagIdx !== -1 ? process.argv[unitFlagIdx + 1] : null;
-const units = filterSlug ? unitsConfig.filter((u) => u.slug === filterSlug) : unitsConfig;
-
-if (units.length === 0) {
-  console.error(`No unit found matching slug "${filterSlug}". Available: ${unitsConfig.map((u) => u.slug).join(', ')}`);
-  process.exit(1);
+function mapUnit(p) {
+  return {
+    pageId: p.id,
+    slug: prop(p, 'Slug'),
+    name: prop(p, 'Name'),
+    propertyLabel: prop(p, 'Property Label'),
+    location: prop(p, 'Location'),
+    ownerLabel: prop(p, 'Owner'),
+    mgmtFeePct: prop(p, 'Mgmt Fee %') || 0,
+    launchDate: prop(p, 'Launch Date')?.start,
+    status: prop(p, 'Status'),
+  };
 }
 
 function mapReservation(p) {
@@ -43,6 +48,7 @@ function mapExpense(p) {
     amount: prop(p, 'Amount (PHP)'),
     status: prop(p, 'Status'),
     notes: prop(p, 'Notes'),
+    ownerVisibility: prop(p, 'Owner Visibility'),
   };
 }
 
@@ -67,15 +73,34 @@ function mapNote(p) {
   };
 }
 
+// The Properties database is the single source of truth for which units exist and
+// which of them are currently active. Inactive units are skipped entirely below.
+const propertyPages = await queryDataSource(notionConfig.properties);
+const allUnits = propertyPages.map(mapUnit);
+const activeUnits = allUnits.filter((u) => u.status === 'Active');
+
+const unitFlagIdx = process.argv.indexOf('--unit');
+const filterSlug = unitFlagIdx !== -1 ? process.argv[unitFlagIdx + 1] : null;
+const units = filterSlug ? activeUnits.filter((u) => u.slug === filterSlug) : activeUnits;
+
+if (units.length === 0) {
+  console.error(
+    filterSlug
+      ? `No active unit found matching slug "${filterSlug}". Active units: ${activeUnits.map((u) => u.slug).join(', ') || 'none'}`
+      : 'No active units found in the Properties database.'
+  );
+  process.exit(1);
+}
+
 const generated = [];
 
 for (const unit of units) {
   console.log(`Generating report for ${unit.name} (${unit.slug})...`);
   const [resPages, expPages, remPages, notePages] = await Promise.all([
-    queryDataSource(unit.notion.reservations),
-    queryDataSource(unit.notion.expenses),
-    queryDataSource(unit.notion.remittance),
-    unit.notion.notes ? queryDataSource(unit.notion.notes) : Promise.resolve([]),
+    queryDataSource(notionConfig.reservations, unitFilter(unit.pageId)),
+    queryDataSource(notionConfig.expenses, unitFilter(unit.pageId)),
+    queryDataSource(notionConfig.remittance, unitFilter(unit.pageId)),
+    queryDataSource(notionConfig.notes, unitFilter(unit.pageId)),
   ]);
 
   const report = buildReport(unit, {
@@ -97,14 +122,14 @@ for (const unit of units) {
 // This page is an INTERNAL directory for Coco's own reference — it lists every
 // owner and unit on one page, so it must never be the link handed to an owner.
 // Only the unit-specific URL (docs/<slug>/) is safe to share externally.
-const TOTAL_UNITS_PLANNED = 8;
-const landingLinks = unitsConfig
+const TOTAL_UNITS_PLANNED = allUnits.length;
+const landingLinks = generated
   .map(
     (u) =>
       `<li><a href="./${u.slug}/">${u.name} — ${u.propertyLabel}</a> <span style="color:#7A6E62">(${u.ownerLabel})</span></li>`
   )
   .join('\n      ');
-const isPilot = unitsConfig.length < TOTAL_UNITS_PLANNED;
+const isPilot = generated.length < TOTAL_UNITS_PLANNED;
 
 const landingHtml = `<!DOCTYPE html>
 <html lang="en">
@@ -127,7 +152,7 @@ const landingHtml = `<!DOCTYPE html>
 </head>
 <body>
   <h1>Co-Host Solutions — Owner Reports</h1>
-  <div class="status">${unitsConfig.length} of ${TOTAL_UNITS_PLANNED} units live${isPilot ? ' — pilot phase, more being added' : ''}</div>
+  <div class="status">${generated.length} of ${TOTAL_UNITS_PLANNED} units active${isPilot ? ' — remaining units marked Inactive in the Properties database' : ''}</div>
   <div class="warning">
     <strong>Internal use only.</strong> This page lists every unit and owner together — do not send this link to owners. Copy each unit's own link below (e.g. <code>/1215/</code>) and share only that one with its owner.
   </div>
